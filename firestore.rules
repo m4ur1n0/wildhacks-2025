@@ -1,0 +1,11 @@
+match /payments/{paymentId} {
+  allow create: if request.auth != null &&
+    request.resource.data.userId == request.auth.uid;
+  allow read: if resource.data.userId == request.auth.uid ||
+    get(/databases/$(database)/documents/csaPrograms/$(resource.data.programId)).data.farmerId == request.auth.uid;
+}
+
+match /users/{userId} {
+  allow update: if request.auth.uid == userId &&
+    request.resource.data.role == resource.data.role;
+}

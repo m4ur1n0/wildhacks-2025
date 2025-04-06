@@ -5,6 +5,12 @@ import 'firebase/auth';
 import {
   collection,
   getDocs,
+  doc,
+  getDoc,
+  addDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -56,6 +62,23 @@ export async function getFarmById(farmId) {
   }
 }
 
+/**
+ * Creates a new farm document in Firestore.
+ *
+ * @param {Object} farmData - The data for the new farm.
+ * @param {string} farmData.bio - A short biography or description of the farm.
+ * @param {string} farmData.deliveryStyle - The style or method of product delivery.
+ * @param {string} farmData.email - The contact email for the farm.
+ * @param {string} farmData.farmId - A unique identifier for the farm.
+ * @param {number} farmData.numberOfSharesLeft - The number of shares currently left.
+ * @param {number} farmData.numberOfSharesTotal - The total number of shares available.
+ * @param {string} farmData.paypalAddress - The PayPal address for receiving payments.
+ * @param {number} farmData.pricePerShare - The cost per share for the farm’s produce.
+ * @param {string[]} farmData.productsInSeason - An array of products currently in season.
+ * @param {Object.<string, string[]>} farmData.productsAvailableNextWeeks - A map where each key is a week (as a string) and each value is an array of product names available for that week.
+ *
+ * @returns {Promise<string>} The ID of the newly created farm document.
+ */
 export async function createFarm(farmData) {
   try {
     const farmsCollectionRef = collection(db, "farms");
@@ -82,7 +105,16 @@ export async function setFarmById(farmId, farmData) {
 export async function updateFarm(farmId, updatedData) {
   try {
     const farmDocRef = doc(db, "farms", farmId);
-    await updateDoc(farmDocRef, updatedData);
+    
+    // Filter out undefined values to prevent accidental field deletion
+    const sanitizedUpdatedData = Object.entries(updatedData).reduce((acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+
+    await updateDoc(farmDocRef, sanitizedUpdatedData);
     return true;
   } catch (error) {
     console.error("Error updating farm:", error);

@@ -1,6 +1,7 @@
 import { AuthProvider } from "@/context/authContext";
 import { crimson } from "./fonts";
 import "./globals.css";
+import "@/styles/scrollbar.css";
 
 export const metadata = {
   title: "SecondsToGo",

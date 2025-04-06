@@ -1,6 +1,12 @@
+"use client"
+
 import FadingTextComponent from "@/components/FadingTextComponent";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
+import { useAuth } from "@/context/authContext";
+import { useRouter } from "next/navigation";
+
+import { useEffect } from "react";
+
 
 export default function Home() {
   const didYouKnowTexts = [
@@ -9,9 +15,15 @@ export default function Home() {
     "A third thing exists here, and we love how it does."
   ]
 
-  const handleLoginButtonClick = () => {
-    console.log('login button clicked')
-  }
+  const {user} = useAuth();
+  const router = useRouter();
+
+
+  useEffect(() => {
+    if (user) {
+      router.push('/home');
+    }
+  }, [user, router])
 
   return (
 
@@ -31,9 +43,11 @@ export default function Home() {
 
 
 
-        <Button variant={'secondary'} className='w-1/4 h-1/16' asChild>
-          <Link href='/home'>Login</Link>
-        </Button>
+        {user ? 
+        <p>Welcome {user.displayName}</p>
+        :
+        <GoogleSignInButton />
+        }
 
 
       </div>

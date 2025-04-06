@@ -21,6 +21,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-map-gl": "^8.0.2",
+    "react-weekly-day-picker": "^1.0.3",
     "tailwind-merge": "^3.1.0",
     "tw-animate-css": "^1.2.5"
   },

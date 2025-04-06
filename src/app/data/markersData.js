@@ -2,7 +2,7 @@
 export const markersData = [
   // Farm markers (just outside Chicagoland; using pin_red.png)
   {
-    id: "farm1",
+    id: "1",
     type: "farm",
     name: "Sunny Farm",
     address: "123 Country Road",
@@ -12,7 +12,7 @@ export const markersData = [
     icon: "/images/pin_red.png",
   },
   {
-    id: "farm2",
+    id: "2",
     type: "farm",
     name: "Green Valley Farm",
     address: "456 Rural Lane",
@@ -22,7 +22,7 @@ export const markersData = [
     icon: "/images/pin_red.png",
   },
   {
-    id: "farm3",
+    id: "3",
     type: "farm",
     name: "Blueberry Farm",
     address: "789 Harvest St",

@@ -101,15 +101,19 @@ export default function MapPage() {
         </div>
         <div className="separator" />
         <div className="exp-description">{marker.description}</div>
+        {marker.type === "farm" ? (
+            <>
         <button
           className="detail-button"
           onClick={(e) => {
             e.stopPropagation();
-            router.push(`../location/${marker.id}`);
+            router.push(`../farm/${marker.id}`);
           }}
         >
           View Details
         </button>
+        </>
+        ) : (<></>)}
 
         <style jsx>{`
         .expanded-tooltip {

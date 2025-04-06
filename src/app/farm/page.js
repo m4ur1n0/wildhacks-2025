@@ -3,6 +3,7 @@ import FarmBanner from '@/components/FarmBanner';
 import FarmStats from '@/components/FarmStats';
 import InSeasonItem from '@/components/InSeasonItem';
 import { getFarm } from '@/lib/db';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 
 const Page = () => {
@@ -34,8 +35,16 @@ const Page = () => {
         return <p>Loading...</p>;
     }
 
+    const router = useRouter();
+    function handleClick() {
+        router.push('/home')
+    }
+
     return (
         <div className='farm-page w-screen h-screen'>
+            <div className='home-page-nav-button absolute top-5 left-5 cursor-pointer' onClick={handleClick}>
+                <img src='/images/home-01_generated.jpg' className='rounded-full w-[6%] surround-shadow-sm' />
+            </div>
             {farmData && (
             <div className='user-information flex flex-col gap-10'>
                 

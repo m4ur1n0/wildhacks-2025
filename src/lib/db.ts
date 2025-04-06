@@ -5,6 +5,7 @@ import {
     updateDoc,
     deleteDoc,
     collection,
+    getDocs,
   } from "firebase/firestore";
   import { db } from "./firebaseConfig";
   
@@ -102,3 +103,25 @@ import {
     await deleteDoc(ref);
   }
   
+  export async function getAllFarms() {
+    try {
+      const farmsCollection = collection(db, "farms");
+      const snapshot = await getDocs(farmsCollection);
+      
+      // Check if the snapshot has any documents
+      if (snapshot.empty) {
+        console.log("No farms found.");
+        return [];
+      }
+  
+      const farms = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+  
+      return farms;
+    } catch (err) {
+      console.error("Error getting all farms:", err.message);
+      return [];
+    }
+  }

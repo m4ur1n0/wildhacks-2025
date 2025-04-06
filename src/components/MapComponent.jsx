@@ -9,6 +9,7 @@ import { useGeolocation } from "../../hooks/useGeolocation";
 import LocationMarker from '../../components/LocationMarker';
 import UserLocationMarker from "../../components/UserLocationMarker";
 import { markersData } from "../data/markersData";
+import { getAllFarms } from "@/lib/db";
 
 // console.log("markersData", markersData);
 
@@ -208,6 +209,22 @@ export default function MapPage() {
       />
     ));
   }, [pins, expandedLocation, animationFinished, handleMarkerClick, renderSmallTooltipText, renderExpandedTooltip]);
+
+  const [allCoordinates, setAllCoordinates] = useState([]);
+
+  async function getAndSetAllFarms() {
+    const allFarms = await getAllFarms();
+    let coords = [];
+    allFarms.foreach((farm) => {
+        if (farm.location) {
+            coords.push(farm.location);
+        }
+    })
+
+  }
+
+  useEffect(() => {
+  })
 
   return (
     <div className="map-container">

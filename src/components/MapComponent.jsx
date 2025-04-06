@@ -4,11 +4,11 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Map, { Marker } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useMapState } from '../../hooks/useMapState';
-import { useGeolocation } from "../../hooks/useGeolocation";
-import LocationMarker from '../../components/LocationMarker';
-import UserLocationMarker from "../../components/UserLocationMarker";
-import { markersData } from "../data/markersData";
+import { useMapState } from '../hooks/useMapState';
+import { useGeolocation } from "../hooks/useGeolocation";
+import LocationMarker from './LocationMarker';
+import UserLocationMarker from "./UserLocationMarker";
+
 import { getAllFarms } from "@/lib/db";
 
 // console.log("markersData", markersData);
@@ -16,7 +16,7 @@ import { getAllFarms } from "@/lib/db";
 
 const MAPTILER_KEY = process.env.NEXT_PUBLIC_MAPTILER_KEY;
 
-export default function MapPage() {
+const MapComponent = () => {
   const router = useRouter();
   const [expandedLocation, setExpandedLocation] = useState(null);
   const [animationFinished, setAnimationFinished] = useState(false);
@@ -47,8 +47,12 @@ export default function MapPage() {
 
   // Handler for marker clicks
   const handleMarkerClick = useCallback((pin) => {
+    // Check if this pin is already expanded AND has a link
+    if (pin === expandedLocation && pin.link) { // Use pin.link directly
+      router.push(pin.link);
+    }
     setExpandedLocation(pin);
-  }, []);
+  }, [expandedLocation, router]);
 
   // Memoized renderer for small tooltip content
   const renderSmallTooltipText = useCallback((marker) => {
@@ -206,25 +210,68 @@ export default function MapPage() {
         onMarkerClick={handleMarkerClick}
         renderSmallTooltipText={renderSmallTooltipText}
         renderExpandedTooltip={renderExpandedTooltip}
+
       />
     ));
   }, [pins, expandedLocation, animationFinished, handleMarkerClick, renderSmallTooltipText, renderExpandedTooltip]);
 
-  const [allCoordinates, setAllCoordinates] = useState([]);
+  const [allCoordinates, setAllCoordinates] = useState([
+    {
+        id: "dropoff1",
+        type: "dropoff",
+        street: "Main St",
+        address: "101 Dropoff Way",
+        description: "Convenient dropoff location in the heart of town.",
+        // Example coordinates for a dropoff in the North Shore area
+        coordinates: [-87.68, 42.05],
+        icon: "/images/pin_blue.png",
+      },
+      {
+        id: "dropoff2",
+        type: "dropoff",
+        street: "Elm St",
+        address: "202 Dropoff Ave",
+        description: "Spacious area with ample parking.",
+        // Adjusted coordinates for a dropoff in the North Shore area
+        coordinates: [-87.70, 42.10],
+        icon: "/images/pin_blue.png",
+      },
+      {
+        id: "dropoff3",
+        type: "dropoff",
+        street: "Pine St",
+        address: "303 Dropoff Blvd",
+        description: "Safe and secure dropoff point.",
+        // Adjusted coordinates for a dropoff in the North Shore area
+        coordinates: [-87.75, 42.07],
+        icon: "/images/pin_blue.png",
+      },
+  ]);
 
   async function getAndSetAllFarms() {
     const allFarms = await getAllFarms();
     let coords = [];
     allFarms.foreach((farm) => {
         if (farm.location) {
-            coords.push(farm.location);
+            const farmLocation = {
+                id: farm.name,
+                type: "farm",
+                name : farm.name,
+                coordinates : [farm.location.latitude, farm.location.longitude],
+                icon : "/images/pin_red.png",
+                link : `/farm/#${farm.id}`,
+            }
+            coords.push(farmLocation);
+
         }
-    })
+    });
+    setAllCoordinates(prev => ([...prev, ...coords]));
 
   }
 
   useEffect(() => {
-  })
+    getAndSetAllFarms();
+  }, [])
 
   return (
     <div className="map-container">
@@ -241,7 +288,7 @@ export default function MapPage() {
           />
         )}
 
-        {markersData.map((marker) => (
+        {allCoordinates.map((marker) => (
           <LocationMarker
             key={marker.id}
             pin={marker}
@@ -263,3 +310,5 @@ export default function MapPage() {
     </div>
   );
 }
+
+export default MapComponent;

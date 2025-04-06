@@ -1,7 +1,6 @@
 "use client"
 import ProfileBanner from '@/components/ProfileBanner'
 import SupportingFarms from '@/components/SupportingFarms'
-import ProfileDebugHelper from '@/components/ProfileDebugHelper'
 import { useAuth } from '@/context/authContext'
 import Link from 'next/link'
 import React from 'react'
@@ -44,8 +43,7 @@ const ProfilePage = () => {
         <SupportingFarms />
       </div>
 
-      {/* Debug helper - only visible in development */}
-      {process.env.NODE_ENV === 'development' && <ProfileDebugHelper />}
+
     </div>
   )
 }

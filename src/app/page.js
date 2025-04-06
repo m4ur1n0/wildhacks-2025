@@ -11,9 +11,9 @@ import { useEffect } from "react";
 
 export default function Home() {
   const didYouKnowTexts = [
-    "Something exists here.",
-    "Something longer, even more meaningful, and with a greater length, exists here. This thing is longer than the first thing, so it might even have a line break.",
-    "A third thing exists here, and we love how it does."
+    '20% of perfectly good produce gets tossed just for looking "ugly"—like odd shapes or harmless blemishes?',
+    'Globally, 1.3 billion tons of food is wasted yearly—with 10 million pounds of that being edible "imperfect" produce. Meanwhile, farmers lose revenue simply because their crops don’t meet grocery store beauty standards.',
+    "Buying 'seconds' isn’t just smart—it’s a power move. Farmers earn more, you save money, and together we slash waste"
   ]
 
   const {user} = useAuth();

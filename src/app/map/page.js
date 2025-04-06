@@ -1,6 +1,8 @@
+"use client";
+
 import { useState, useEffect } from 'react';
-import Map, { Marker, Popup } from 'react-map-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import Map, { Marker, Popup } from 'react-map-gl/maplibre';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
 export default function MapPage() {
   const [viewport, setViewport] = useState({
@@ -12,7 +14,6 @@ export default function MapPage() {
   const [pins, setPins] = useState([]);
   const [selectedPin, setSelectedPin] = useState(null);
 
-  // Get user location on component mount
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -21,7 +22,6 @@ export default function MapPage() {
           setUserLocation({ latitude, longitude });
           setViewport((prev) => ({ ...prev, latitude, longitude }));
 
-          // Demo pins near the user location
           const demoPins = [
             {
               id: 1,
@@ -52,11 +52,9 @@ export default function MapPage() {
       <Map
         {...viewport}
         style={{ width: '100%', height: '100%' }}
-        mapStyle="mapbox://styles/mapbox/streets-v11"
-        mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
+        mapStyle="https://demotiles.maplibre.org/style.json"
         onMove={(evt) => setViewport(evt.viewState)}
       >
-        {/* User location marker */}
         {userLocation && (
           <Marker latitude={userLocation.latitude} longitude={userLocation.longitude}>
             <div style={{ fontSize: '24px' }} title="You are here">
@@ -65,7 +63,6 @@ export default function MapPage() {
           </Marker>
         )}
 
-        {/* Custom demo pins */}
         {pins.map((pin) => (
           <Marker key={pin.id} latitude={pin.latitude} longitude={pin.longitude}>
             <button
@@ -80,9 +77,7 @@ export default function MapPage() {
               }}
               title={pin.title}
             >
-              {/* Use an image if available, or fallback to an emoji */}
               <img src="/pin.svg" alt="pin" style={{ width: '25px', height: '25px' }} onError={(e) => {
-                // Fallback to emoji if image fails to load
                 e.target.style.display = 'none';
               }} />
               <span style={{ display: 'none' }}>📌</span>
@@ -90,7 +85,6 @@ export default function MapPage() {
           </Marker>
         ))}
 
-        {/* Popup for a selected pin */}
         {selectedPin && (
           <Popup
             latitude={selectedPin.latitude}

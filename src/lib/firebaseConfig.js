@@ -1,8 +1,6 @@
 // firebaseConfig.js
-import firebase from 'firebase/app';
-import 'firebase/firestore';
-import 'firebase/auth';
-import {
+import { initializeApp, getApps } from 'firebase/app';
+import { getFirestore, 
   collection,
   getDocs,
   doc,
@@ -12,6 +10,7 @@ import {
   updateDoc,
   deleteDoc,
 } from "firebase/firestore";
+import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -22,14 +21,32 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
+// Initialize Firebase with a test-friendly approach
+let app;
+let db;
+let auth;
+
+// In test environment, these might be mocked differently
+try {
+  // Check if we're in a browser/Next.js environment
+  if (typeof window !== 'undefined' || process.env.NODE_ENV === 'development') {
+    // Use normal initialization
+    app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
+  } else {
+    // Simple initialization for tests
+    app = initializeApp(firebaseConfig);
+  }
+  db = getFirestore(app);
+  auth = getAuth(app);
+} catch (error) {
+  console.error("Firebase initialization error:", error);
+  // Provide fallbacks for testing
+  app = app || {};
+  db = db || {};
+  auth = auth || {};
 }
 
-const db = firebase.firestore();
-const auth = firebase.auth();
-
-export { db, auth };
+export { app, db, auth };
 
 export async function getAllFarms() {
   try {

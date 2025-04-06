@@ -1,16 +1,7 @@
 import { AuthProvider } from "@/context/authContext";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const fontClasses = "font-sans antialiased";
 
 export const metadata = {
   title: "SecondsToGo",
@@ -22,7 +13,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
 
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={fontClasses}
         >
           <AuthProvider>
           {children}

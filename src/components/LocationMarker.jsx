@@ -6,10 +6,10 @@ export default function LocationMarker({
   animationFinished,
   onMarkerClick,
   renderSmallTooltipText,
-  renderExpandedTooltip
+  renderExpandedTooltip,
 }) {
   return (
-    <Marker latitude={pin.latitude} longitude={pin.longitude}>
+    <Marker latitude={pin.coordinates[1]} longitude={pin.coordinates[0]}>
       <div
         className="marker-button clickable"
         onClick={(e) => {
@@ -25,17 +25,19 @@ export default function LocationMarker({
           }
         }}
       >
-        <img src="/images/pin_blue.png" alt="Location pin" className="pin bounce" />
+        <img src={pin.icon} alt="Location pin" className="pin bounce" />
         {animationFinished && !expandedLocation && (
           <div className="tooltip small-tooltip">
             {renderSmallTooltipText(pin)}
           </div>
         )}
-        {animationFinished && expandedLocation && expandedLocation.id === pin.id && (
-          <div className="tooltip expanded-tooltip-container">
-            {renderExpandedTooltip(pin)}
-          </div>
-        )}
+        {animationFinished &&
+          expandedLocation &&
+          expandedLocation.id === pin.id && (
+            <div className="tooltip expanded-tooltip-container">
+              {renderExpandedTooltip(pin)}
+            </div>
+          )}
       </div>
       <style jsx>{`
         .pin {

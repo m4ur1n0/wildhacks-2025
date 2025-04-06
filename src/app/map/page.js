@@ -8,6 +8,10 @@ import { useMapState } from '../../hooks/useMapState';
 import { useGeolocation } from "../../hooks/useGeolocation";
 import LocationMarker from '../../components/LocationMarker';
 import UserLocationMarker from "../../components/UserLocationMarker";
+import { markersData } from "../data/markersData";
+
+// console.log("markersData", markersData);
+
 
 const MAPTILER_KEY = process.env.NEXT_PUBLIC_MAPTILER_KEY;
 
@@ -101,7 +105,7 @@ export default function MapPage() {
           className="detail-button"
           onClick={(e) => {
             e.stopPropagation();
-            router.push(`/location/${marker.id}`);
+            router.push(`../location/${marker.id}`);
           }}
         >
           View Details
@@ -216,13 +220,23 @@ export default function MapPage() {
           />
         )}
 
-        {markerElements}
+        {markersData.map((marker) => (
+          <LocationMarker
+            key={marker.id}
+            pin={marker}
+            expandedLocation={expandedLocation}
+            animationFinished={animationFinished}
+            onMarkerClick={handleMarkerClick}
+            renderSmallTooltipText={renderSmallTooltipText}
+            renderExpandedTooltip={renderExpandedTooltip}
+          />
+        ))}
       </Map>
       <style jsx>{`
         .map-container {
           height: 100vh;
           width: 100%;
-          font-family: 'Geist Sans', sans-serif;
+          font-family: "Geist Sans", sans-serif;
         }
       `}</style>
     </div>

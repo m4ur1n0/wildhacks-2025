@@ -1,4 +1,5 @@
 import { AuthProvider } from "@/context/authContext";
+
 // import { Geist, Geist_Mono } from "next/font/google";
 import { crimson } from "./fonts";
 import "./globals.css";
@@ -23,7 +24,9 @@ export default function RootLayout({ children }) {
     <html lang="en">
 
         <body
+
           className={`${crimson.variable} antialiased`}
+
         >
           <AuthProvider>
           {children}

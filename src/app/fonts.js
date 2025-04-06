@@ -33,5 +33,6 @@ export const crimson = localFont({
             style: 'italic',
         },
     ],
-    variable : '--crimson-text'
+    variable : '--crimson-text',
+    display: 'swap'
 })

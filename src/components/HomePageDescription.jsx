@@ -53,8 +53,8 @@ const HomePageDescription = () => {
               
             </CarouselContent>
             
-            <CarouselPrevious className="left-2 top-15/16" />
-            <CarouselNext className="right-2 top-15/16" />
+            <CarouselPrevious className="left-2 top-[95%]" />
+            <CarouselNext className="right-2 top-[95%]" />
           </Carousel>
         </CardContent>
       </Card>

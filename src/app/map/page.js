@@ -1,182 +1,228 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Map, { Marker } from 'react-map-gl/maplibre';
-import 'maplibre-gl/dist/maplibre-gl.css';
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import Map, { Marker } from "react-map-gl/maplibre";
+import "maplibre-gl/dist/maplibre-gl.css";
+import { useMapState } from '../../hooks/useMapState';
+import { useGeolocation } from "../../hooks/useGeolocation";
+import LocationMarker from '../../components/LocationMarker';
+import UserLocationMarker from "../../components/UserLocationMarker";
 
 const MAPTILER_KEY = process.env.NEXT_PUBLIC_MAPTILER_KEY;
 
 export default function MapPage() {
   const router = useRouter();
-  const [viewport, setViewport] = useState({
-    latitude: 37.7577,
-    longitude: -122.4376,
-    zoom: 14,
-  });
-  const [userLocation, setUserLocation] = useState(null);
-  const [pins, setPins] = useState([]);
+  const [expandedLocation, setExpandedLocation] = useState(null);
   const [animationFinished, setAnimationFinished] = useState(false);
 
-  // Set animationFinished to true after bounce animation (0.8s) completes
+  // Custom hooks for state management
+  const { viewport, setViewport } = useMapState();
+  const { userLocation, pins } = useGeolocation(setViewport);
+
+  // Markers' bounce animation completes after 0.8s
   useEffect(() => {
     const timeout = setTimeout(() => setAnimationFinished(true), 800);
     return () => clearTimeout(timeout);
   }, []);
 
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation({ latitude, longitude });
-          setViewport((prev) => ({ ...prev, latitude, longitude }));
-
-          const demoPins = [
-            {
-              id: 1,
-              latitude: latitude + 0.01,
-              longitude: longitude + 0.01,
-              title: 'Local Market',
-              description: 'A great local market to explore fresh produce.',
-            },
-            {
-              id: 2,
-              latitude: latitude - 0.01,
-              longitude: longitude - 0.01,
-              title: 'Organic Farm',
-              description: 'This organic farm offers fresh vegetables and seasonal fruits.',
-            },
-          ];
-          setPins(demoPins);
-        },
-        (error) => {
-          console.error('Error getting geolocation:', error);
-        }
-      );
+  // Allow closing expanded tooltip via Escape key
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === "Escape") {
+      setExpandedLocation(null);
     }
   }, []);
 
+  useEffect(() => {
+    if (expandedLocation) {
+      document.addEventListener("keydown", handleKeyDown);
+      return () => document.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [expandedLocation, handleKeyDown]);
+
+  // Handler for marker clicks
+  const handleMarkerClick = useCallback((pin) => {
+    setExpandedLocation(pin);
+  }, []);
+
+  // Memoized renderer for small tooltip content
+  const renderSmallTooltipText = useCallback((marker) => {
+    if (marker.type === "farm") {
+      return (
+        <>
+          <div className="tooltip-title">{marker.name}</div>
+          <div className="tooltip-address">{marker.address}</div>
+        </>
+      );
+    } else if (marker.type === "dropoff") {
+      return (
+        <>
+          <div className="tooltip-title">
+            [{marker.street}] drop off location
+          </div>
+          <div className="tooltip-address">{marker.address}</div>
+        </>
+      );
+    }
+    return null;
+  }, []);
+
+  // Memoized renderer for expanded tooltip content
+
+  const renderExpandedTooltip = useCallback((marker) => {
+    return (
+      <div className="expanded-tooltip">
+        <div className="exp-header">
+          {marker.type === "farm" ? (
+            <>
+              <div className="exp-title">{marker.name}</div>
+              <div className="exp-address">{marker.address}</div>
+            </>
+          ) : (
+            <>
+              <div className="exp-title">[{marker.street}] drop off location</div>
+              <div className="exp-address">{marker.address}</div>
+            </>
+          )}
+          <button
+            className="close-button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpandedLocation(null);
+            }}
+            aria-label="Close tooltip"
+          >
+            ×
+          </button>
+        </div>
+        <div className="separator" />
+        <div className="exp-description">{marker.description}</div>
+        <button
+          className="detail-button"
+          onClick={(e) => {
+            e.stopPropagation();
+            router.push(`/location/${marker.id}`);
+          }}
+        >
+          View Details
+        </button>
+
+        <style jsx>{`
+        .expanded-tooltip {
+          display: flex;
+          flex-direction: column;
+        }
+        .exp-header {
+          position: relative;
+          padding-bottom: 0.5rem;
+          border-bottom: 1px solid #ccc;
+          margin-bottom: 0.5rem;
+        }
+        .exp-title {
+          font-weight: bold;
+          margin-bottom: 0.25rem;
+        }
+        .exp-address {
+          font-size: 0.9rem;
+        }
+        .close-button {
+          position: absolute;
+          top: 0;
+          right: 0;
+          background: transparent;
+          border: none;
+          font-size: 1.25rem;
+          color: #fff;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+          cursor: pointer;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0);
+          transform: translateZ(0);
+        }
+        .close-button:hover {
+          background: rgba(255, 255, 255, 0.2);
+          transform: translateZ(0) scale(1.1);
+          box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+        }
+        .close-button:active {
+          transform: translateZ(0) scale(0.95);
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+        }
+        .exp-description {
+          font-size: 0.85rem;
+          margin-bottom: 0.75rem;
+        }
+        .detail-button {
+          background: #fff;
+          color: #000;
+          border: none;
+          padding: 0.5rem 0.9rem;
+          font-size: 0.85rem;
+          font-weight: 500;
+          border-radius: 4px;
+          transition: all 0.2s ease;
+          align-self: flex-start;
+          cursor: pointer;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+          transform: translateZ(0);
+        }
+        .detail-button:hover {
+          background: #f0f0f0;
+          transform: translateZ(0) scale(1.05) translateY(-2px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .detail-button:active {
+          transform: translateZ(0) scale(0.98) translateY(0);
+          background: #e0e0e0;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+      `}</style>
+      </div>
+    );
+  }, [router, setExpandedLocation]);
+
+  // Memoize pin markers to prevent unnecessary re-renders
+  const markerElements = useMemo(() => {
+    return pins.map((pin) => (
+      <LocationMarker
+        key={pin.id}
+        pin={pin}
+        expandedLocation={expandedLocation}
+        animationFinished={animationFinished}
+        onMarkerClick={handleMarkerClick}
+        renderSmallTooltipText={renderSmallTooltipText}
+        renderExpandedTooltip={renderExpandedTooltip}
+      />
+    ));
+  }, [pins, expandedLocation, animationFinished, handleMarkerClick, renderSmallTooltipText, renderExpandedTooltip]);
+
   return (
-    <div style={{ height: '100vh', width: '100%', fontFamily: '"Geist Sans", sans-serif' }}>
+    <div className="map-container">
       <Map
         {...viewport}
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: "100%", height: "100%" }}
         mapStyle={`https://api.maptiler.com/maps/streets/style.json?key=${MAPTILER_KEY}`}
         onMove={(evt) => setViewport(evt.viewState)}
       >
-        {/* User Location Marker – unclickable */}
         {userLocation && (
-          <Marker latitude={userLocation.latitude} longitude={userLocation.longitude}>
-            <div className={`marker-button ${animationFinished ? "enabled" : "disabled"} user-marker`} aria-label="Your Location">
-              <img
-                src="/_images/pin_red.png"
-                alt="User pin"
-                className="pin bounce"
-              />
-              <span className="tooltip">Your Location</span>
-            </div>
-          </Marker>
+          <UserLocationMarker
+            userLocation={userLocation}
+            animationFinished={animationFinished}
+          />
         )}
 
-        {/* Other Location Markers – redirect on click */}
-        {pins.map((pin) => (
-          <Marker key={pin.id} latitude={pin.latitude} longitude={pin.longitude}>
-            <button
-              className={`marker-button ${animationFinished ? "enabled" : "disabled"}`}
-              onClick={(e) => {
-                e.preventDefault();
-                router.push(`/location/${pin.id}`);
-              }}
-              aria-label={pin.title}
-            >
-              <img
-                src="/_images/pin_blue.png"
-                alt="Location pin"
-                className="pin bounce"
-              />
-              <span className="tooltip">{pin.title}</span>
-            </button>
-          </Marker>
-        ))}
+        {markerElements}
       </Map>
-
       <style jsx>{`
-        .pin {
-          width: 35px;
-          height: 35px;
-          opacity: 0; /* Initially hidden until animation plays */
-        }
-        .bounce {
-          animation: bounce 0.8s ease forwards;
-          animation-delay: 1s;
-        }
-        @keyframes bounce {
-          0% {
-            transform: translateY(-50px);
-            opacity: 0;
-          }
-          25% {
-            transform: translateY(0);
-            opacity: 1;
-          }
-          27% {
-            transform: translateY(0); /* Abrupt impact */
-          }
-          35% {
-            transform: translateY(-10px); /* Slight upward bounce */
-          }
-          45% {
-            transform: translateY(0); /* Settle quickly */
-          }
-          100% {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-        .marker-button {
-          position: relative;
-          display: inline-block;
-          background: none;
-          border: none;
-        }
-        /* User marker styling: unclickable (default cursor) */
-        .user-marker {
-          cursor: default;
-          pointer-events: none; /* Disables any click events */
-        }
-        /* Other markers will have pointer cursor */
-        .enabled:not(.user-marker) {
-          cursor: pointer;
-        }
-        /* Disable tooltip interaction until animation finishes */
-        .marker-button.disabled .tooltip {
-          opacity: 0;
-          visibility: hidden;
-          pointer-events: none;
-        }
-        .marker-button.enabled .tooltip {
-          transition: opacity 0.2s ease; /* No additional delay */
-        }
-        .marker-button.enabled:hover .tooltip {
-          opacity: 1;
-          visibility: visible;
-        }
-        .tooltip {
-          position: absolute;
-          bottom: 120%;
-          left: 50%;
-          transform: translateX(-50%);
-          background: rgba(0, 0, 0, 0.75);
-          color: #fff;
-          padding: 4px 8px;
-          border-radius: 4px;
-          font-size: 12px;
-          white-space: nowrap;
-          opacity: 0;
-          visibility: hidden;
-          z-index: 100;
-          font-family: "Geist Sans", sans-serif;
+        .map-container {
+          height: 100vh;
+          width: 100%;
+          font-family: 'Geist Sans', sans-serif;
         }
       `}</style>
     </div>

@@ -14,6 +14,7 @@ export default function MapPage() {
   const [pins, setPins] = useState([]);
   const [selectedPin, setSelectedPin] = useState(null);
 
+  // Get user location and demo pins
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -22,6 +23,7 @@ export default function MapPage() {
           setUserLocation({ latitude, longitude });
           setViewport((prev) => ({ ...prev, latitude, longitude }));
 
+          // Create demo pins near the user's location
           const demoPins = [
             {
               id: 1,
@@ -39,6 +41,7 @@ export default function MapPage() {
             }
           ];
           setPins(demoPins);
+          console.log("Demo pins set:", demoPins);
         },
         (error) => {
           console.error('Error getting geolocation:', error);
@@ -55,14 +58,35 @@ export default function MapPage() {
         mapStyle="https://demotiles.maplibre.org/style.json"
         onMove={(evt) => setViewport(evt.viewState)}
       >
+        {/* User location marker */}
         {userLocation && (
           <Marker latitude={userLocation.latitude} longitude={userLocation.longitude}>
-            <div style={{ fontSize: '24px' }} title="You are here">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setSelectedPin({
+                  id: 'user-location',
+                  latitude: userLocation.latitude,
+                  longitude: userLocation.longitude,
+                  title: 'Your Location',
+                  description: 'This is your current location.'
+                });
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '24px'
+              }}
+              title="You are here"
+            >
               📍
-            </div>
+            </button>
           </Marker>
         )}
 
+
+        {/* Custom demo pins */}
         {pins.map((pin) => (
           <Marker key={pin.id} latitude={pin.latitude} longitude={pin.longitude}>
             <button
@@ -73,18 +97,18 @@ export default function MapPage() {
               style={{
                 background: 'none',
                 border: 'none',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                fontSize: '24px',
               }}
               title={pin.title}
             >
-              <img src="/pin.svg" alt="pin" style={{ width: '25px', height: '25px' }} onError={(e) => {
-                e.target.style.display = 'none';
-              }} />
-              <span style={{ display: 'none' }}>📌</span>
+              {/* Using an emoji as a fallback icon */}
+              📌
             </button>
           </Marker>
         ))}
 
+        {/* Popup for a selected pin */}
         {selectedPin && (
           <Popup
             latitude={selectedPin.latitude}

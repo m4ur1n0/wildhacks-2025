@@ -18,7 +18,7 @@ const ProfileLink = () => {
     }
 
   return (
-    <div className='profile-picture-and-link absolute top-3 right-3 w-[40px] h-[40px]' onClick={handleProfileClick}>
+    <div className='profile-picture-and-link w-[50px] h-[50px] rounded-full outline outline-offset-1 ' onClick={handleProfileClick}>
         <img src={user.photoURL} className='profile-photo rounded-full' />
     </div>
   )

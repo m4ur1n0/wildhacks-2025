@@ -73,6 +73,7 @@ import {
     numSharesLeft: number,
     paypalAddress?: string,
     pricePerShare: number,
+    profilePhoto: string,
   }) {
     const ref = doc(db, "farms", farmId);
     await setDoc(ref, data);
@@ -90,6 +91,7 @@ import {
     numSharesLeft: number,
     paypalAddress: string,
     pricePerShare: number,
+    profilePhoto: string,
   }>) {
     const ref = doc(db, "farms", farmId);
     await updateDoc(ref, data);

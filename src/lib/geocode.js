@@ -10,7 +10,7 @@ export async function geocodeWithLocationIQ(address) {
   if (!data || data.length === 0) throw new Error('No results found');
 
   return {
-    lat: parseFloat(data[0].lat),
-    lng: parseFloat(data[0].lon),
+    latitude: parseFloat(data[0].lat),
+    longitude: parseFloat(data[0].lon),
   };
 }

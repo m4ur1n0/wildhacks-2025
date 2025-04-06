@@ -57,7 +57,7 @@ const formSchema = z.object({
 
 const NewFarmForm = () => {
   const [loading, setLoading] = useState(false);
-  const {user} = useAuth();
+  const {user, refreshLocalFarm} = useAuth();
   const router = useRouter();
   // form
   const form = useForm({
@@ -83,14 +83,16 @@ const NewFarmForm = () => {
       pricePerShare: Number(values.pricePerShare),
       numShares: Number(values.numShares),
       numSharesLeft : Number(values.numShares),
-      coords
+      location : coords,
+      profilePhoto : user.photoURL
     };
     console.log(submissionData);
     
     await createFarm(user.uid, values); // the googel account's uid becomes the farm's id
     // setLoading(false);
+    await refreshLocalFarm();
 
-    router.push(`/farm/${user.uid}`); // redirect to the new farm page!
+    router.push(`/farm#${user.uid}`); // redirect to the new farm page!
 
   }
 

@@ -33,7 +33,7 @@ export default function Home() {
       }
   
       if (farm) {
-        router.push(`/farm/${uid}`);
+        router.push(`/farm#${uid}`);
         return;
       }
   

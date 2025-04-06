@@ -40,6 +40,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../lib/firebaseConfig';
 import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { getConsumer } from '@/lib/db';
 
 const AuthContext = createContext();
 
@@ -73,8 +74,28 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const refreshLocalConsumer = async () => {
+    try {
+      const fresh = getConsumer(user.uid);
+      setUser(fresh);
+    } catch (err) {
+      console.warn('error ocurred when i tried to refresh local');
+      return
+    }
+  }
+
+  const refreshLocalFarm = async () => {
+    try {
+      const fresh = getFarm(user.uid);
+      setUser(fresh);
+    } catch (err) {
+      console.warn('error ocurred when i tried to refresh local');
+      return;
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, loading, signInWithGoogle, logout, refreshLocalConsumer, refreshLocalFarm }}>
       {!loading && children}
     </AuthContext.Provider>
   );

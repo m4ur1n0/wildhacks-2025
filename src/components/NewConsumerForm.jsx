@@ -28,7 +28,7 @@ const formSchema = z.object({
 
 const PreferredNameForm = () => {
   const [loading, setLoading] = useState(false);
-  const {user} = useAuth();
+  const {user, refreshLocalConsumer} = useAuth();
   const router = useRouter();
 
   const form = useForm({
@@ -44,6 +44,7 @@ const PreferredNameForm = () => {
     setLoading(true);
     await createConsumer(user.uid, {email : user.email, name : values.preferredName});
     // setLoading(false);
+    await refreshLocalConsumer();
 
     router.push('/home');
 

@@ -3,6 +3,7 @@
 import FadingTextComponent from "@/components/FadingTextComponent";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { useAuth } from "@/context/authContext";
+import { getConsumer, getFarm } from "@/lib/db";
 import { useRouter } from "next/navigation";
 
 import { useEffect } from "react";
@@ -18,12 +19,46 @@ export default function Home() {
   const {user} = useAuth();
   const router = useRouter();
 
+  const validateUser = async () => {
+    if (!user) return;
+  
+    try {
+      const uid = user.uid;
+  
+      let farm = null;
+      try {
+        farm = await getFarm(uid);
+      } catch (err) {
+        console.warn("Farm check failed:", err.message);
+      }
+  
+      if (farm) {
+        router.push(`/farm/${uid}`);
+        return;
+      }
+  
+      let consumer = null;
+      try {
+        consumer = await getConsumer(uid);
+      } catch (err) {
+        console.warn("Consumer check failed:", err.message);
+      }
+  
+      if (!consumer) {
+        router.push('/new-user');
+        return;
+      }
+  
+      router.push('/home');
+  
+    } catch (error) {
+      console.error("Unexpected auth validation failure:", error);
+    }
+  };
 
   useEffect(() => {
-    if (user) {
-      router.push('/home');
-    }
-  }, [user, router])
+    validateUser();
+  }, [user]);
 
   return (
 

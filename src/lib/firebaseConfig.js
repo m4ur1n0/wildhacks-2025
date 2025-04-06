@@ -1,15 +1,5 @@
-// firebaseConfig.js
-import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, 
-  collection,
-  getDocs,
-  doc,
-  getDoc,
-  addDoc,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-} from "firebase/firestore";
+import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -21,206 +11,60 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase with a test-friendly approach
-let app;
-let db;
-let auth;
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-// In test environment, these might be mocked differently
-try {
-  // Check if we're in a browser/Next.js environment
-  if (typeof window !== 'undefined' || process.env.NODE_ENV === 'development') {
-    // Use normal initialization
-    app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
-  } else {
-    // Simple initialization for tests
-    app = initializeApp(firebaseConfig);
-  }
-  db = getFirestore(app);
-  auth = getAuth(app);
-} catch (error) {
-  console.error("Firebase initialization error:", error);
-  // Provide fallbacks for testing
-  app = app || {};
-  db = db || {};
-  auth = auth || {};
-}
+export { db, auth };
 
-export { app, db, auth };
+// // Farm operations
+// export async function getFarmById(farmId) {
+//   const docSnap = await getDoc(doc(db, "farms", farmId));
+//   return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null;
+// }
 
-export async function getAllFarms() {
-  try {
-    const farmsCollectionRef = collection(db, "farms");
-    const querySnapshot = await getDocs(farmsCollectionRef);
-    const farms = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    return farms; // returns an array of farm objects
-  } catch (error) {
-    console.error("Error fetching farms:", error);
-    throw error;
-  }
-}
+// export async function getAllFarms() {
+//   const querySnapshot = await getDocs(collection(db, "farms"));
+//   return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+// }
 
-export async function getFarmById(farmId) {
-  try {
-    const farmDocRef = doc(db, "farms", farmId);
-    const docSnap = await getDoc(farmDocRef);
-    if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() };
-    } else {
-      // docSnap.data() will be undefined in this case
-      return null;
-    }
-  } catch (error) {
-    console.error("Error fetching farm:", error);
-    throw error;
-  }
-}
+// export async function createFarm(farmData) {
+//   const docRef = await addDoc(collection(db, "farms"), farmData);
+//   return docRef.id;
+// }
 
-/**
- * Creates a new farm document in Firestore.
- *
- * @param {Object} farmData - The data for the new farm.
- * @param {string} farmData.bio - A short biography or description of the farm.
- * @param {string} farmData.deliveryStyle - The style or method of product delivery.
- * @param {string} farmData.email - The contact email for the farm.
- * @param {string} farmData.farmId - A unique identifier for the farm.
- * @param {number} farmData.numberOfSharesLeft - The number of shares currently left.
- * @param {number} farmData.numberOfSharesTotal - The total number of shares available.
- * @param {string} farmData.paypalAddress - The PayPal address for receiving payments.
- * @param {number} farmData.pricePerShare - The cost per share for the farm’s produce.
- * @param {string[]} farmData.productsInSeason - An array of products currently in season.
- * @param {Object.<string, string[]>} farmData.productsAvailableNextWeeks - A map where each key is a week (as a string) and each value is an array of product names available for that week.
- *
- * @returns {Promise<string>} The ID of the newly created farm document.
- */
-export async function createFarm(farmData) {
-  try {
-    const farmsCollectionRef = collection(db, "farms");
-    const docRef = await addDoc(farmsCollectionRef, farmData);
-    return docRef.id; // newly generated document ID
-  } catch (error) {
-    console.error("Error creating farm:", error);
-    throw error;
-  }
-}
+// export async function updateFarm(farmId, updatedData) {
+//   await updateDoc(doc(db, "farms", farmId), updatedData);
+// }
 
-export async function setFarmById(farmId, farmData) {
-  try {
-    const farmDocRef = doc(db, "farms", farmId);
-    // setDoc overwrites the entire document by default
-    await setDoc(farmDocRef, farmData, { merge: true });
-    return true;
-  } catch (error) {
-    console.error("Error setting farm:", error);
-    throw error;
-  }
-}
+// export async function deleteFarm(farmId) {
+//   await deleteDoc(doc(db, "farms", farmId));
+// }
 
-export async function updateFarm(farmId, updatedData) {
-  try {
-    const farmDocRef = doc(db, "farms", farmId);
+// // Consumer operations (simplified same pattern)
+// export async function getConsumerById(consumerId) {
+//   const docSnap = await getDoc(doc(db, "consumers", consumerId));
+//   if (!docSnap.exists() || Object.keys(docSnap.data() || {}).length === 0) {
+//       return null;
+//     }
     
-    // Filter out undefined values to prevent accidental field deletion
-    const sanitizedUpdatedData = Object.entries(updatedData).reduce((acc, [key, value]) => {
-      if (value !== undefined) {
-        acc[key] = value;
-      }
-      return acc;
-    }, {});
+//   return { id: docSnap.id, ...docSnap.data() };
+// }
 
-    await updateDoc(farmDocRef, sanitizedUpdatedData);
-    return true;
-  } catch (error) {
-    console.error("Error updating farm:", error);
-    throw error;
-  }
-}
+// export async function getAllConsumers() {
+//   const querySnapshot = await getDocs(collection(db, "consumers"));
+//   return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+// }
 
-export async function deleteFarm(farmId) {
-  try {
-    const farmDocRef = doc(db, "farms", farmId);
-    await deleteDoc(farmDocRef);
-    return true;
-  } catch (error) {
-    console.error("Error deleting farm:", error);
-    throw error;
-  }
-}
+// export async function createConsumer(consumerData) {
+//   const docRef = await addDoc(collection(db, "consumers"), consumerData);
+//   return docRef.id;
+// }
 
-export async function getAllConsumers() {
-  try {
-    const consumersRef = collection(db, "consumers");
-    const querySnapshot = await getDocs(consumersRef);
-    const consumers = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    return consumers; // returns an array of consumer objects
-  } catch (error) {
-    console.error("Error fetching consumers:", error);
-    throw error;
-  }
-}
+// export async function updateConsumer(consumerId, updatedData) {
+//   await updateDoc(doc(db, "consumers", consumerId), updatedData);
+// }
 
-export async function getConsumerById(consumerId) {
-  try {
-    const consumerDocRef = doc(db, "consumers", consumerId);
-    const docSnap = await getDoc(consumerDocRef);
-    if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() };
-    } else {
-      return null; // Document does not exist
-    }
-  } catch (error) {
-    console.error("Error fetching consumer:", error);
-    throw error;
-  }
-}
-
-export async function createConsumer(consumerData) {
-  try {
-    const consumersRef = collection(db, "consumers");
-    const docRef = await addDoc(consumersRef, consumerData);
-    return docRef.id; // newly generated document ID
-  } catch (error) {
-    console.error("Error creating consumer:", error);
-    throw error;
-  }
-}
-
-export async function setConsumerById(consumerId, consumerData) {
-  try {
-    const consumerDocRef = doc(db, "consumers", consumerId);
-    // By default, setDoc overwrites the entire document
-    await setDoc(consumerDocRef, consumerData, { merge: true });
-    return true;
-  } catch (error) {
-    console.error("Error setting consumer:", error);
-    throw error;
-  }
-}
-
-export async function updateConsumer(consumerId, updatedData) {
-  try {
-    const consumerDocRef = doc(db, "consumers", consumerId);
-    await updateDoc(consumerDocRef, updatedData);
-    return true;
-  } catch (error) {
-    console.error("Error updating consumer:", error);
-    throw error;
-  }
-}
-
-export async function deleteConsumer(consumerId) {
-  try {
-    const consumerDocRef = doc(db, "consumers", consumerId);
-    await deleteDoc(consumerDocRef);
-    return true;
-  } catch (error) {
-    console.error("Error deleting consumer:", error);
-    throw error;
-  }
-}
+// export async function deleteConsumer(consumerId) {
+//   await deleteDoc(doc(db, "consumers", consumerId));
+// }
